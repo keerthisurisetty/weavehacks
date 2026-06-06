@@ -21,7 +21,7 @@
 - Track progress in `docs/PR_STATUS.md`. Ralph-loop setup + CI live in `docs/AUTOMATION.md`.
 - Test nondeterministic agents by **mocking the LLM layer** for plumbing and asserting **bounds, not exact values**, on fixtures — see `docs/TESTING.md`.
 ## Current state
-- [x] **We are on PR3; last green = PR2** — Weave bootstrap + traced `structured_call` chokepoint (mockable; smoke script).
+- [x] **We are on PR4; last green = PR3** — speaker agent (4 modes; secret/mode confined to `Speaker`; CLI + Tier-1 tests).
 ## Stack (fixed)
 Python 3.11 + FastAPI (async) backend · OpenAI SDK with Pydantic structured outputs · Weave (tracing + evals) · Redis Stack (pub/sub bus + RedisVL vector search + sorted sets) · Next.js + CopilotKit/AG-UI frontend (WebSocket fallback). Models via `OPENAI_MODEL` env (or W&B Inference).
  
