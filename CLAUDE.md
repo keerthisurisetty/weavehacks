@@ -21,7 +21,7 @@
 - Track progress in `docs/PR_STATUS.md`. Ralph-loop setup + CI live in `docs/AUTOMATION.md`.
 - Test nondeterministic agents by **mocking the LLM layer** for plumbing and asserting **bounds, not exact values**, on fixtures — see `docs/TESTING.md`.
 ## Current state
-- [x] **We are on PR8; last green = PR7** — Consistency Auditor via RedisVL: per-round vector store (`RedisVLStore` + `InMemoryVectorStore` for tests), embed→KNN→LLM contradiction check; fixed-vector tests; real-RedisVL smoke script.
+- [x] **We are on PR9; last green = PR8** — full detector panel (cross-examiner + consistency + behavioral [+ evidence]) assessing concurrently each turn; weighted adjudicator; latest-per-detector fusion; panel-vs-single supported. Harness complete.
 ## Stack (fixed)
 Python 3.11 + FastAPI (async) backend · OpenAI SDK with Pydantic structured outputs · Weave (tracing + evals) · Redis Stack (pub/sub bus + RedisVL vector search + sorted sets) · Next.js + CopilotKit/AG-UI frontend (WebSocket fallback). Models via `OPENAI_MODEL` env (or W&B Inference).
  

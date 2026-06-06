@@ -1,23 +1,29 @@
-"""The round orchestrator — speaker <-> cross-examiner loop, then a verdict.
+"""The round orchestrator — speaker <-> cross-examiner loop with a detector panel.
 
 A custom async orchestrator (no agent framework) so the Weave trace tree is
-exactly round -> speaker / examiner / adjudicator. After each step it emits a
-RoundEvent (utterance / signal / progress / verdict) through an optional sink,
-so any transport (CLI print, Redis pub/sub, AG-UI) plugs in the same way.
+exactly round -> speaker / each detector / adjudicator. Each turn: the
+Cross-Examiner asks, the speaker answers, then the whole panel assesses
+CONCURRENTLY; the adjudicator fuses the latest signal per detector. After each
+step it emits a RoundEvent through an optional sink (CLI / Redis / AG-UI).
 
 Progress is kept SEPARATE from suspicion: it only ever fills toward 100%.
 """
 
 from __future__ import annotations
 
+import asyncio
+
 import weave
 
 from app import memory
 from app.adjudicator import Adjudicator
+from app.detectors.base import Detector
 from app.detectors.cross_examiner import CrossExaminer
+from app.detectors.panel import default_panel
+from app.detectors.vector_store import VectorStore
 from app.events import EventSink, RoundEvent
 from app.llm import init_weave
-from app.models import Phase, Role, Round, SpeakerConfig, Utterance, Verdict
+from app.models import DetectorSignal, Phase, Role, Round, SpeakerConfig, Utterance, Verdict
 from app.speaker import Speaker
 
 DEFAULT_MAX_TURNS = 4
@@ -58,22 +64,35 @@ async def _progress(sink: EventSink | None, phase: Phase, turns_done: int, max_t
 async def run_round(
     cfg: SpeakerConfig,
     *,
+    detectors: list[Detector] | None = None,
+    examiner: CrossExaminer | None = None,
+    vector_store: VectorStore | None = None,
     max_turns: int = DEFAULT_MAX_TURNS,
     emit: EventSink | None = None,
     rid: str = "r_local",
     init_tracing: bool = False,
     persist: bool = False,
 ) -> Round:
-    """Run one interrogation round and return the scored Round."""
+    """Run one interrogation round and return the scored Round.
+
+    ``detectors`` controls which signals feed the verdict (default: the full
+    panel). The Cross-Examiner always drives the questions. Pass a single-element
+    ``detectors`` list for the panel-vs-single comparison.
+    """
     if init_tracing:
         init_weave()
 
     rnd = Round.from_config(rid, cfg)
     speaker = Speaker(cfg)
-    examiner = CrossExaminer()
+    if detectors is None:
+        examiner, detectors = default_panel(rid, examiner=examiner, vector_store=vector_store)
+    elif examiner is None:
+        examiner = CrossExaminer()
     adjudicator = Adjudicator()
+
     transcript = rnd.transcript
     signals = rnd.signals
+    latest: dict[str, DetectorSignal] = {}  # current suspicion per detector (drives meters)
 
     await _progress(emit, Phase.SETUP, 0, max_turns)
 
@@ -90,14 +109,17 @@ async def run_round(
         transcript.append(answer)
         await _emit(emit, RoundEvent(kind="utterance", utterance=answer))
 
-        signal = await examiner.assess(cfg.topic, transcript)
-        signals.append(signal)
-        await _emit(emit, RoundEvent(kind="signal", signal=signal))
+        # The whole panel assesses the new turn concurrently.
+        new_signals = await asyncio.gather(*(d.assess(cfg.topic, transcript) for d in detectors))
+        for sig in new_signals:
+            signals.append(sig)
+            latest[sig.detector] = sig
+            await _emit(emit, RoundEvent(kind="signal", signal=sig))
 
         await _progress(emit, Phase.INTERROGATION, turn, max_turns)
 
         # The adjudicator owns when-to-call: stop early once confident enough.
-        interim = adjudicator.fuse(signals)
+        interim = adjudicator.fuse(list(latest.values()))
         if interim.confidence >= SHORT_CIRCUIT_CONFIDENCE:
             verdict = interim
             break
@@ -107,7 +129,7 @@ async def run_round(
 
     await _progress(emit, Phase.DELIBERATION, max_turns, max_turns)
     if verdict is None:
-        verdict = adjudicator.fuse(signals)
+        verdict = adjudicator.fuse(list(latest.values()))
     rnd.verdict = verdict
     rnd.score()
     if persist:
