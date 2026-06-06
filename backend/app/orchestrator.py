@@ -10,19 +10,15 @@ Progress is kept SEPARATE from suspicion: it only ever fills toward 100%.
 
 from __future__ import annotations
 
-from collections.abc import Awaitable, Callable
-
 import weave
 
 from app import memory
 from app.adjudicator import Adjudicator
 from app.detectors.cross_examiner import CrossExaminer
-from app.events import RoundEvent
+from app.events import EventSink, RoundEvent
 from app.llm import init_weave
 from app.models import Phase, Role, Round, SpeakerConfig, Utterance, Verdict
 from app.speaker import Speaker
-
-EventSink = Callable[[RoundEvent], Awaitable[None]]
 
 DEFAULT_MAX_TURNS = 4
 SHORT_CIRCUIT_CONFIDENCE = 0.85

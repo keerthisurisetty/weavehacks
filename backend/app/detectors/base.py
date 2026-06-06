@@ -7,9 +7,11 @@ renders its input through this function.
 
 from __future__ import annotations
 
+from typing import Protocol
+
 from pydantic import BaseModel, Field
 
-from app.models import Role, Utterance
+from app.models import DetectorSignal, Role, Utterance
 
 
 class Assessment(BaseModel):
@@ -19,6 +21,15 @@ class Assessment(BaseModel):
     suspicion: float = Field(ge=0.0, le=1.0)
     rationale: str
     evidence: str | None = None
+
+
+class Detector(Protocol):
+    """Any panel detector: assess a transcript, emit a suspicion signal.
+
+    The active Cross-Examiner also asks questions; passive detectors only assess.
+    """
+
+    async def assess(self, topic: str, transcript: list[Utterance]) -> DetectorSignal: ...
 
 
 def render_transcript(transcript: list[Utterance]) -> str:

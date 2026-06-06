@@ -21,7 +21,7 @@
 - Track progress in `docs/PR_STATUS.md`. Ralph-loop setup + CI live in `docs/AUTOMATION.md`.
 - Test nondeterministic agents by **mocking the LLM layer** for plumbing and asserting **bounds, not exact values**, on fixtures — see `docs/TESTING.md`.
 ## Current state
-- [x] **We are on PR6; last green = PR5** — Redis foundation: round persistence + sorted-set leaderboard (`memory.py`), fakeredis-tested; persist wired into `run_round` (opt-in).
+- [x] **We are on PR7; last green = PR6** — Redis pub/sub bus: publish/subscribe utterance·signal·progress·verdict, signal aggregator + passive-detector subscriber; orchestrator streams via `make_event_sink`; fakeredis roundtrip tests.
 ## Stack (fixed)
 Python 3.11 + FastAPI (async) backend · OpenAI SDK with Pydantic structured outputs · Weave (tracing + evals) · Redis Stack (pub/sub bus + RedisVL vector search + sorted sets) · Next.js + CopilotKit/AG-UI frontend (WebSocket fallback). Models via `OPENAI_MODEL` env (or W&B Inference).
  
