@@ -58,7 +58,9 @@ async def test_panel_lifecycle_and_short_circuit(monkeypatch: pytest.MonkeyPatch
     assert len(rnd.signals) < 4 * 2  # but did stop before max_turns (4)
     progresses = [e.progress for e in events if e.kind == "progress"]
     assert progresses == sorted(progresses) and progresses[-1] == 100
-    assert events[-1].kind == "verdict"
+    kinds = [e.kind for e in events]
+    assert "verdict" in kinds
+    assert kinds[-1] == "reveal"  # the round closes on the ground-truth reveal
 
 
 async def test_uncertain_runs_all_turns(monkeypatch: pytest.MonkeyPatch) -> None:

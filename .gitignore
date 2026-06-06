@@ -27,3 +27,7 @@ BLOCKED.md
 *.swp
 .idea/
 .vscode/
+
+# local-only tooling
+.claude/launch.json
+.claude/settings.local.json

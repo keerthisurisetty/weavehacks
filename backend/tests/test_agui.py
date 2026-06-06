@@ -9,7 +9,7 @@ from app import orchestrator
 from app.agui import round_event_to_agui
 from app.events import RoundEvent
 from app.main import app
-from app.models import DetectorSignal, Phase, Role, Round, Utterance, Verdict
+from app.models import DetectorSignal, Mode, Phase, Role, Round, Utterance, Verdict
 from fastapi.testclient import TestClient
 
 SECRET = "TOP-SECRET-XYZ"
@@ -45,6 +45,16 @@ def test_signal_maps_to_suspicion_state_delta() -> None:
     assert len(evs) == 1
     delta = evs[0].delta[0]
     assert delta["path"] == "/suspicion/behavioral_analyst" and delta["value"] == 0.7
+
+
+def test_reveal_maps_to_custom_event() -> None:
+    evs = round_event_to_agui(
+        RoundEvent(
+            kind="reveal", mode=Mode.LYING, ground_truth="deceptive", secret="x", correct=True
+        )
+    )
+    assert len(evs) == 1 and evs[0].name == "reveal"
+    assert evs[0].value["mode"] == "lying" and evs[0].value["correct"] is True
 
 
 def test_utterance_maps_to_text_message_triplet() -> None:

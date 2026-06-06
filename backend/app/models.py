@@ -45,7 +45,8 @@ class Role(StrEnum):
     """Who produced a transcript line."""
 
     SPEAKER = "speaker"
-    EXAMINER = "examiner"  # cross-examiner agent or a human follow-up (HITL)
+    EXAMINER = "examiner"  # cross-examiner agent
+    HUMAN = "human"  # a human interjection (HITL)
 
 
 class Utterance(BaseModel):
