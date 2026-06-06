@@ -14,6 +14,7 @@ from collections.abc import Awaitable, Callable
 
 import weave
 
+from app import memory
 from app.adjudicator import Adjudicator
 from app.detectors.cross_examiner import CrossExaminer
 from app.events import RoundEvent
@@ -65,6 +66,7 @@ async def run_round(
     emit: EventSink | None = None,
     rid: str = "r_local",
     init_tracing: bool = False,
+    persist: bool = False,
 ) -> Round:
     """Run one interrogation round and return the scored Round."""
     if init_tracing:
@@ -112,6 +114,8 @@ async def run_round(
         verdict = adjudicator.fuse(signals)
     rnd.verdict = verdict
     rnd.score()
+    if persist:
+        await memory.persist_result(rnd)
 
     await _progress(emit, Phase.VERDICT, max_turns, max_turns)
     await _emit(emit, RoundEvent(kind="verdict", verdict=verdict))
