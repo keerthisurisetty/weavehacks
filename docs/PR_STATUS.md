@@ -10,7 +10,7 @@ One line per PR. Tick a box only when the green gate passes **and** the PR's
 - [x] PR4 first detector + adjudicator → one scored round (CLI)  ← vertical slice
 - [x] PR5 redis foundation (state + leaderboard)
 - [x] PR6 pub/sub event bus (real-time fan-out)
-- [ ] PR7 consistency auditor via RedisVL
+- [x] PR7 consistency auditor via RedisVL
 - [ ] PR8 full detector panel + ensemble fusion
 - [ ] PR9 weave evaluation harness  ← the money metric
 - [ ] PR10 AG-UI backend endpoint
