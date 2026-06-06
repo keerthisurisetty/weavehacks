@@ -35,11 +35,17 @@ async def main() -> None:
     parser.add_argument("--topic", default="an expense report for a client trip")
     parser.add_argument("--secret", default="the $400 dinner was personal, not for a client")
     parser.add_argument("--max-turns", type=int, default=4)
+    parser.add_argument("--persist", action="store_true", help="save to Redis + leaderboard")
     args = parser.parse_args()
 
     cfg = SpeakerConfig(topic=args.topic, mode=Mode(args.mode), secret=args.secret)
     rnd = await run_round(
-        cfg, max_turns=args.max_turns, emit=_printer, rid="r_cli", init_tracing=True
+        cfg,
+        max_turns=args.max_turns,
+        emit=_printer,
+        rid="r_cli",
+        init_tracing=True,
+        persist=args.persist,
     )
 
     v = rnd.verdict
