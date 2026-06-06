@@ -46,3 +46,22 @@ def test_decisive_detector_accounts_for_weight() -> None:
     # behavioral 0.8*|0.45|=0.36 < evidence 1.3*|0.30|=0.39 -> evidence is decisive
     v = Adjudicator().fuse([_sig("behavioral_analyst", 0.95), _sig("evidence_checker", 0.8)])
     assert v.decisive_detector == "evidence_checker"
+
+
+def test_abstained_signals_are_excluded() -> None:
+    # a consistent liar makes consistency abstain at 0.0; it must NOT drag the vote
+    v = Adjudicator().fuse(
+        [
+            DetectorSignal(detector="cross_examiner", suspicion=0.7),
+            DetectorSignal(detector="consistency_auditor", suspicion=0.0, abstained=True),
+        ]
+    )
+    assert v.label == "deceptive"  # 0.7 alone, not (0.7+0)/2
+    assert v.confidence == 0.7
+
+
+def test_all_abstained_is_uncertain_honest() -> None:
+    v = Adjudicator().fuse(
+        [DetectorSignal(detector="consistency_auditor", suspicion=0.0, abstained=True)]
+    )
+    assert v.label == "honest" and v.confidence == 0.5

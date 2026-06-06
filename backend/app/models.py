@@ -65,6 +65,10 @@ class DetectorSignal(BaseModel):
     utterance_ref: str | None = None
     evidence: str | None = None
     rationale: str = ""
+    # True when the detector has no basis to judge (e.g. a contradiction-finder
+    # that found no contradiction). Abstaining signals are excluded from fusion —
+    # absence of evidence is not evidence of honesty.
+    abstained: bool = False
 
 
 class Verdict(BaseModel):

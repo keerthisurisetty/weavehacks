@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import warnings
 from dataclasses import dataclass
 
 from app.detectors.vector_store import RedisVLStore, VectorStore
@@ -20,6 +21,10 @@ from app.events import RoundEvent
 from app.llm import init_weave
 from app.models import Mode, Role, SpeakerConfig
 from app.orchestrator import run_round
+
+# Weave serializes OpenAI's parsed-completion objects during tracing; silence the
+# resulting (harmless) pydantic serializer warning so the demo output stays clean.
+warnings.filterwarnings("ignore", category=UserWarning, module="pydantic")
 
 
 @dataclass

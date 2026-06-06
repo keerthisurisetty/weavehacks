@@ -53,7 +53,9 @@ async def test_panel_lifecycle_and_short_circuit(monkeypatch: pytest.MonkeyPatch
 
     assert rnd.verdict is not None and rnd.verdict.label == "deceptive"
     assert rnd.correct is True
-    assert len(rnd.signals) == 2  # two detectors, one (short-circuited) turn
+    # short-circuits at turn 2 (>= MIN_TURNS_BEFORE_CALL), so 2 detectors x 2 turns
+    assert len(rnd.signals) == 4
+    assert len(rnd.signals) < 4 * 2  # but did stop before max_turns (4)
     progresses = [e.progress for e in events if e.kind == "progress"]
     assert progresses == sorted(progresses) and progresses[-1] == 100
     assert events[-1].kind == "verdict"
