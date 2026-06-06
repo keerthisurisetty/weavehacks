@@ -53,6 +53,42 @@ make eval                   # the Weave evaluation (accuracy/FPR/Brier; needs ke
 
 ---
 
+## Running it locally for a user (AI-agent runbook)
+
+> For an AI coding agent (e.g. Claude Code) asked to "run Tell" for a user. The dev
+> servers are **long-running** — start them in the **background** and poll for
+> readiness with `curl --retry`; never run them in the foreground (they block) and
+> never `sleep` to wait.
+
+**0 — Locate + set up.** Confirm the app is present (`ls backend/app/main.py frontend/app/page.tsx`). If `.venv/` or `frontend/node_modules/` are missing, run `make install`. Then `cp -n .env.example .env` — and **ask the user to paste their keys** (you can't fetch them). For cheap testing, suggest `OPENAI_MODEL=gpt-4o-mini`.
+
+**1 — Fastest path: the UI with *zero keys* (Demo mode).** Demo mode is pure frontend (scripted), so it needs no backend and no API keys — ideal to instantly show the user the full courtroom.
+```bash
+make web   # start in background, then poll:
+curl -s --retry 30 --retry-delay 1 --retry-connrefused -o /dev/null -w "%{http_code}" http://localhost:3000
+```
+Tell the user: open http://localhost:3000 → choose **DEMO** → pick a case → **BEGIN** (or press **V** to jump straight to the verdict).
+
+**2 — Live path: real agents (needs `OPENAI_API_KEY`; `WANDB_API_KEY` optional for traces).**
+```bash
+make api   # background, then poll until {"status":"ok"}:
+curl -s --retry 40 --retry-delay 1 --retry-connrefused http://localhost:8000/health
+make web   # background (if not already up)
+```
+`make api` prints a `View Weave data at …` link on boot when a W&B key is set; live rounds trace there. In the UI choose **LIVE**. (HITL: type in **ASK THE WITNESS** during interrogation; it's injected as a real cross-exam turn.)
+
+**3 — Verify / screenshot (optional).** Point a browser/preview tool (preview MCP or a headless browser) at http://localhost:3000.
+
+**4 — Stop everything.**
+```bash
+pkill -f "uvicorn app.main"; pkill -f "next dev"   # the servers
+make down                                          # Redis (only if you started it)
+```
+
+**Gotchas.** Redis/Docker is **optional** — the default panel uses an in-memory store; only `make redis` features (`scripts/*_smoke`, `demo --redis`, pub/sub) need Docker Desktop running. `401`/`insufficient_quota` → key or billing; `model_not_found` / structured-output error → set `OPENAI_MODEL`; UI says "couldn't reach the backend" → `make api` isn't up yet.
+
+---
+
 ## Sponsor usage
 
 | Sponsor | How Tell uses it |
