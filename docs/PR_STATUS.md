@@ -4,7 +4,7 @@ One line per PR. Tick a box only when the green gate passes **and** the PR's
 "done when" (from `docs/IMPLEMENTATION_PLAN.md`) is met.
 
 - [x] PR0 scaffold + env + tooling
-- [ ] PR1 domain models + config
+- [x] PR1 domain models + config
 - [ ] PR2 weave bootstrap + traced LLM client
 - [ ] PR3 speaker agent (assignable secret + mode)
 - [ ] PR4 first detector + adjudicator → one scored round (CLI)  ← vertical slice
