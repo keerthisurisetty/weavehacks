@@ -21,7 +21,7 @@
 - Track progress in `docs/PR_STATUS.md`. Ralph-loop setup + CI live in `docs/AUTOMATION.md`.
 - Test nondeterministic agents by **mocking the LLM layer** for plumbing and asserting **bounds, not exact values**, on fixtures — see `docs/TESTING.md`.
 ## Current state
-- [x] **All PRs 0–12 implemented; last green = PR12** — demo harness (3 curated rounds) + README (quickstart, sponsor writeup, responsible scope, checklist). Engine + UI + demo complete. Remaining (human/keys): run smokes + `make eval`, layer in the design, record the video, submit.
+- [x] **PRs 0–12 + UI→Weave tracing (PR13); last green = PR13** — engine + UI + demo + live-UI Weave tracing (`weave.init` at API startup, guarded; tests stubbed offline). Remaining (human/keys): run smokes + `make eval`, layer in the design, record the video, submit.
 ## Stack (fixed)
 Python 3.11 + FastAPI (async) backend · OpenAI SDK with Pydantic structured outputs · Weave (tracing + evals) · Redis Stack (pub/sub bus + RedisVL vector search + sorted sets) · Next.js + CopilotKit/AG-UI frontend (WebSocket fallback). Models via `OPENAI_MODEL` env (or W&B Inference).
  
