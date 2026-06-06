@@ -8,7 +8,10 @@ from __future__ import annotations
 
 from fastapi import FastAPI
 
+from app.agui import router as agui_router
+
 app = FastAPI(title="Tell", version="0.0.0")
+app.include_router(agui_router)
 
 
 @app.get("/health")

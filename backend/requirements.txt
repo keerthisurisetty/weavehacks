@@ -13,6 +13,7 @@ pydantic>=2
 pydantic-settings
 numpy
 python-dotenv
+ag-ui-protocol  # AG-UI event types + encoder (PR10 SSE endpoint)
 
 # --- dev / test ---
 pytest
