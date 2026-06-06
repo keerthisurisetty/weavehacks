@@ -1,0 +1,23 @@
+# Runtime + dev/test deps (one file so CI can `pip install -r backend/requirements.txt`
+# and then run ruff + pytest directly — see docs/AUTOMATION.md §6).
+
+# --- runtime ---
+fastapi
+uvicorn[standard]
+openai
+weave
+wandb
+redis>=5
+redisvl
+pydantic>=2
+pydantic-settings
+numpy
+python-dotenv
+
+# --- dev / test ---
+pytest
+pytest-asyncio
+httpx          # FastAPI TestClient
+fakeredis      # deterministic Redis in unit tests (Tier 1)
+ruff
+mypy

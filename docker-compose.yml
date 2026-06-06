@@ -1,0 +1,14 @@
+# Redis Stack — pub/sub bus + RediSearch/vector (RedisVL) + sorted sets, all in one.
+# Vanilla redis will NOT do vector search; Stack is required (see .claude/skills/redis).
+services:
+  redis:
+    image: redis/redis-stack:latest
+    container_name: tell-redis
+    ports:
+      - "6379:6379" # redis
+      - "8001:8001" # RedisInsight UI
+    volumes:
+      - redis-data:/data
+
+volumes:
+  redis-data:

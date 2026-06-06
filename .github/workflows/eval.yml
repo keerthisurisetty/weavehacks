@@ -1,0 +1,25 @@
+# Token-costing behavioral regression gate — run manually (keeps PR CI free).
+# Needs OPENAI_API_KEY + WANDB_API_KEY repo secrets and an OPENAI_MODEL repo variable.
+name: eval
+on:
+  workflow_dispatch: {}
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis/redis-stack-server:latest
+        ports: ["6379:6379"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r backend/requirements.txt
+      - run: cd backend && python -m eval.run_eval
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          WANDB_API_KEY: ${{ secrets.WANDB_API_KEY }}
+          OPENAI_MODEL: ${{ vars.OPENAI_MODEL }}
+          REDIS_URL: redis://localhost:6379

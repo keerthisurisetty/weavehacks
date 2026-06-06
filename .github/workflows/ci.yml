@@ -1,0 +1,27 @@
+name: ci
+on:
+  pull_request: {}
+  push:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis/redis-stack-server:latest
+        ports: ["6379:6379"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: pip install -r backend/requirements.txt
+      - run: ruff check . && ruff format --check .
+      - run: pytest -m "not agent and not eval" -q
+        env:
+          REDIS_URL: redis://localhost:6379
+      - run: cd frontend && npm ci && npm run build
