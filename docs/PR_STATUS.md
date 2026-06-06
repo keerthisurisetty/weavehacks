@@ -14,5 +14,5 @@ One line per PR. Tick a box only when the green gate passes **and** the PR's
 - [x] PR8 full detector panel + ensemble fusion
 - [x] PR9 weave evaluation harness  ← the money metric
 - [x] PR10 AG-UI backend endpoint
-- [ ] PR11 copilotkit courtroom frontend
+- [x] PR11 courtroom frontend (functional; design restyle pending)
 - [ ] PR12 demo harness + polish + submission
