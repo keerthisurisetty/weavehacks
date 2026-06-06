@@ -13,6 +13,7 @@ from __future__ import annotations
 import argparse
 import asyncio
 
+from app import bus
 from app.events import RoundEvent
 from app.models import Mode, Role, SpeakerConfig
 from app.orchestrator import run_round
@@ -36,13 +37,23 @@ async def main() -> None:
     parser.add_argument("--secret", default="the $400 dinner was personal, not for a client")
     parser.add_argument("--max-turns", type=int, default=4)
     parser.add_argument("--persist", action="store_true", help="save to Redis + leaderboard")
+    parser.add_argument("--bus", action="store_true", help="also publish events to Redis pub/sub")
     args = parser.parse_args()
 
     cfg = SpeakerConfig(topic=args.topic, mode=Mode(args.mode), secret=args.secret)
+
+    sinks = [_printer]
+    if args.bus:
+        sinks.append(bus.make_event_sink("r_cli"))
+
+    async def emit(event: RoundEvent) -> None:
+        for sink in sinks:
+            await sink(event)
+
     rnd = await run_round(
         cfg,
         max_turns=args.max_turns,
-        emit=_printer,
+        emit=emit,
         rid="r_cli",
         init_tracing=True,
         persist=args.persist,

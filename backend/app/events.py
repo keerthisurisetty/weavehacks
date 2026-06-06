@@ -7,6 +7,7 @@ verdict->Custom). Keeping one flat event type keeps every transport simple.
 
 from __future__ import annotations
 
+from collections.abc import Awaitable, Callable
 from typing import Literal
 
 from pydantic import BaseModel
@@ -21,3 +22,7 @@ class RoundEvent(BaseModel):
     utterance: Utterance | None = None
     signal: DetectorSignal | None = None
     verdict: Verdict | None = None
+
+
+# A sink consumes events as they are emitted (print, publish to Redis, AG-UI...).
+EventSink = Callable[[RoundEvent], Awaitable[None]]

@@ -8,7 +8,10 @@ extend-exclude = ["frontend", ".venv"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "ASYNC"]
-ignore = ["E501"] # wrapping is the formatter's job
+ignore = [
+    "E501",     # wrapping is the formatter's job
+    "ASYNC109", # we intentionally expose timeout= on the bus aggregators (safe default)
+]
 
 [tool.mypy]
 python_version = "3.11"
