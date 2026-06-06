@@ -81,3 +81,24 @@ async def embed_text(text: str, *, model: str = "text-embedding-3-small") -> lis
     """
     resp = await get_client().embeddings.create(model=model, input=text)
     return resp.data[0].embedding
+
+
+async def gather_evidence(query: str, *, model: str | None = None) -> str:
+    """Web-search-backed evidence for the Evidence Checker (Responses API).
+
+    Returns "" if the tool/model is unavailable so a round never breaks — the
+    detector then emits a neutral signal. To go on-brand for the Redis/W&B prizes,
+    swap the tool for the W&B MCP server:
+        tools=[{"type": "mcp", "server_url": "https://mcp.withwandb.com/mcp",
+                "authorization": settings.wandb_api_key}]
+    (Confirm the exact web_search tool name at the event.)
+    """
+    try:
+        resp = await get_client().responses.create(
+            model=model or settings.openai_model,
+            tools=[{"type": "web_search"}],
+            input=query,
+        )
+        return resp.output_text or ""
+    except Exception:  # evidence is best-effort; never sink a round on it
+        return ""
