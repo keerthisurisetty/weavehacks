@@ -16,3 +16,4 @@ One line per PR. Tick a box only when the green gate passes **and** the PR's
 - [x] PR10 AG-UI backend endpoint
 - [x] PR11 courtroom frontend (functional; design restyle pending)
 - [x] PR12 demo harness + polish + submission
+- [x] PR13 (post-plan) UI rounds trace to Weave (weave.init at API startup)

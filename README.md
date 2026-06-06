@@ -47,7 +47,7 @@ make eval                   # the Weave evaluation (accuracy/FPR/Brier; needs ke
 
 **See it run:**
 - **Terminal demo:** `cd backend && ../.venv/bin/python -m scripts.demo` (add `--redis` for on-brand RedisVL).
-- **Courtroom UI:** `make api` + `make web`, open http://localhost:3000, click **Run a round** — meters move live, the verdict fires.
+- **Courtroom UI:** `make api` + `make web`, open http://localhost:3000, click **Run a round** — meters move live, the verdict fires. With a W&B key set, `make api` prints a Weave link on boot and every UI round traces there too.
 
 `make check` is the green gate (lint + typecheck + fast tests + frontend build) — run before every commit. Test strategy + tiers: [`docs/TESTING.md`](docs/TESTING.md).
 
