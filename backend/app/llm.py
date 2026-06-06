@@ -71,3 +71,13 @@ async def structured_call(
     if parsed is None:
         raise ValueError("structured_call: model returned no parsed output (refusal?)")
     return parsed
+
+
+async def embed_text(text: str, *, model: str = "text-embedding-3-small") -> list[float]:
+    """Embed text for the consistency auditor's vector search (1536 dims).
+
+    Routed through here (like structured_call) so tests monkeypatch one function.
+    Auto-traced by Weave once init_weave has patched the client.
+    """
+    resp = await get_client().embeddings.create(model=model, input=text)
+    return resp.data[0].embedding
