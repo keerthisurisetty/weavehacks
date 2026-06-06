@@ -21,7 +21,7 @@
 - Track progress in `docs/PR_STATUS.md`. Ralph-loop setup + CI live in `docs/AUTOMATION.md`.
 - Test nondeterministic agents by **mocking the LLM layer** for plumbing and asserting **bounds, not exact values**, on fixtures — see `docs/TESTING.md`.
 ## Current state
-- [x] **We are on PR10; last green = PR9** — ENGINE COMPLETE (PR0–9): Weave Evaluation (accuracy/FPR/Brier + panel-vs-single), regression gate, 24-round 4-mode dataset, scorer unit tests. Next: AG-UI backend + UI.
+- [x] **We are on PR11; last green = PR10** — AG-UI SSE endpoint (RoundEvent→STATE_DELTA/TEXT_MESSAGE/CUSTOM) + WebSocket fallback; stream never carries secret/mode; event-sequence tests vs a mocked round.
 ## Stack (fixed)
 Python 3.11 + FastAPI (async) backend · OpenAI SDK with Pydantic structured outputs · Weave (tracing + evals) · Redis Stack (pub/sub bus + RedisVL vector search + sorted sets) · Next.js + CopilotKit/AG-UI frontend (WebSocket fallback). Models via `OPENAI_MODEL` env (or W&B Inference).
  
