@@ -12,6 +12,7 @@ Progress is kept SEPARATE from suspicion: it only ever fills toward 100%.
 from __future__ import annotations
 
 import asyncio
+from collections.abc import Awaitable, Callable
 
 import weave
 
@@ -29,6 +30,9 @@ from app.speaker import Speaker
 DEFAULT_MAX_TURNS = 4
 SHORT_CIRCUIT_CONFIDENCE = 0.85
 MIN_TURNS_BEFORE_CALL = 2  # apply some pressure before ending early
+
+# Returns a queued human question (HITL) or None to let the examiner generate one.
+QuestionSource = Callable[[], Awaitable[str | None]]
 
 
 def compute_progress(phase: Phase, turns_done: int, max_turns: int) -> int:
@@ -61,6 +65,21 @@ async def _progress(sink: EventSink | None, phase: Phase, turns_done: int, max_t
     )
 
 
+async def _next_question(
+    examiner: CrossExaminer,
+    topic: str,
+    transcript: list[Utterance],
+    question_source: QuestionSource | None,
+) -> tuple[str, Role]:
+    """A queued human interjection (HITL) takes the next turn; else the
+    cross-examiner generates the question."""
+    if question_source is not None:
+        human_q = await question_source()
+        if human_q:
+            return human_q, Role.HUMAN
+    return await examiner.question(topic, transcript), Role.EXAMINER
+
+
 @weave.op
 async def run_round(
     cfg: SpeakerConfig,
@@ -73,6 +92,8 @@ async def run_round(
     rid: str = "r_local",
     init_tracing: bool = False,
     persist: bool = False,
+    with_evidence: bool = False,
+    question_source: QuestionSource | None = None,
 ) -> Round:
     """Run one interrogation round and return the scored Round.
 
@@ -86,7 +107,9 @@ async def run_round(
     rnd = Round.from_config(rid, cfg)
     speaker = Speaker(cfg)
     if detectors is None:
-        examiner, detectors = default_panel(rid, examiner=examiner, vector_store=vector_store)
+        examiner, detectors = default_panel(
+            rid, examiner=examiner, vector_store=vector_store, with_evidence=with_evidence
+        )
     elif examiner is None:
         examiner = CrossExaminer()
     adjudicator = Adjudicator()
@@ -97,12 +120,12 @@ async def run_round(
 
     await _progress(emit, Phase.SETUP, 0, max_turns)
 
-    question = await examiner.question(cfg.topic, transcript)
+    question, q_role = await _next_question(examiner, cfg.topic, transcript, question_source)
     verdict: Verdict | None = None
 
     for turn in range(1, max_turns + 1):
         history = list(transcript)
-        q_utt = Utterance(id=f"q{turn}", role=Role.EXAMINER, text=question)
+        q_utt = Utterance(id=f"q{turn}", role=q_role, text=question)
         transcript.append(q_utt)
         await _emit(emit, RoundEvent(kind="utterance", utterance=q_utt))
 
@@ -132,7 +155,9 @@ async def run_round(
             break
 
         if turn < max_turns:
-            question = await examiner.question(cfg.topic, transcript)
+            question, q_role = await _next_question(
+                examiner, cfg.topic, transcript, question_source
+            )
 
     await _progress(emit, Phase.DELIBERATION, max_turns, max_turns)
     if verdict is None:
@@ -144,4 +169,15 @@ async def run_round(
 
     await _progress(emit, Phase.VERDICT, max_turns, max_turns)
     await _emit(emit, RoundEvent(kind="verdict", verdict=verdict))
+    # The ground-truth reveal — the only event carrying secret/mode (post-verdict).
+    await _emit(
+        emit,
+        RoundEvent(
+            kind="reveal",
+            mode=cfg.mode,
+            ground_truth=rnd.ground_truth,
+            secret=cfg.secret,
+            correct=rnd.correct,
+        ),
+    )
     return rnd
