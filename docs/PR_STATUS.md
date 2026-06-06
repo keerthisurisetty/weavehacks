@@ -5,7 +5,7 @@ One line per PR. Tick a box only when the green gate passes **and** the PR's
 
 - [x] PR0 scaffold + env + tooling
 - [x] PR1 domain models + config
-- [ ] PR2 weave bootstrap + traced LLM client
+- [x] PR2 weave bootstrap + traced LLM client
 - [ ] PR3 speaker agent (assignable secret + mode)
 - [ ] PR4 first detector + adjudicator → one scored round (CLI)  ← vertical slice
 - [ ] PR5 redis foundation (state + leaderboard)
