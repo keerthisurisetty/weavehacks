@@ -11,6 +11,7 @@ venv/
 # Node / Next
 node_modules/
 .next/
+.next-build/
 out/
 npm-debug.log*
 

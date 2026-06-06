@@ -18,9 +18,11 @@ export const metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   const fontVars = `${bebas.variable} ${spaceMono.variable} ${courier.variable} ${plex.variable}`;
+  // suppressHydrationWarning: browser extensions (Grammarly, etc.) inject
+  // attributes onto <html>/<body> before React hydrates — harmless, but noisy.
   return (
-    <html lang="en" className={fontVars}>
-      <body>{children}</body>
+    <html lang="en" className={fontVars} suppressHydrationWarning>
+      <body suppressHydrationWarning>{children}</body>
     </html>
   );
 }
