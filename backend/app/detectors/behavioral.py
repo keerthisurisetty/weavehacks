@@ -18,7 +18,8 @@ _SYS = (
     "You detect deception from linguistic tells ALONE — not external facts. Topic: {topic}. "
     "Rate how the SPEAKER talks on a 0..1 suspicion scale: hedging, evasion, over-specification, "
     "refusal to commit, deflection, and confidence/content mismatch raise it; direct, specific, "
-    "willing answers lower it. One-line rationale; cite the most telling statement id as evidence."
+    "willing answers lower it. Default low: reserve suspicion above 0.5 for clear tells, not "
+    "ordinary directness or brevity. One-line rationale; cite the most telling statement id."
 )
 
 

@@ -29,15 +29,18 @@ class EvidenceChecker:
     async def assess(self, topic: str, transcript: list[Utterance]) -> DetectorSignal:
         claim = next((u for u in reversed(transcript) if u.role is Role.SPEAKER), None)
         if claim is None:
-            return DetectorSignal(detector=NAME, suspicion=0.0, rationale="no claim yet")
+            return DetectorSignal(
+                detector=NAME, suspicion=0.0, rationale="no claim yet", abstained=True
+            )
 
         evidence = await llm.gather_evidence(f"Verify this claim about {topic}: {claim.text}")
         if not evidence:
             return DetectorSignal(
                 detector=NAME,
-                suspicion=0.5,  # neutral — don't bias the panel when we can't check
+                suspicion=0.5,
                 rationale="no external evidence available",
                 utterance_ref=claim.id,
+                abstained=True,  # can't check -> don't vote
             )
 
         messages = [

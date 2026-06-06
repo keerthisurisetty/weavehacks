@@ -10,6 +10,7 @@ Run (needs OPENAI_API_KEY + WANDB_API_KEY):  make eval
 from __future__ import annotations
 
 import asyncio
+import warnings
 from typing import Any
 
 import weave
@@ -21,6 +22,8 @@ from app.orchestrator import run_round
 
 from eval.dataset import DATASET
 from eval.scorers import brier, false_positive, verdict_correct
+
+warnings.filterwarnings("ignore", category=UserWarning, module="pydantic")
 
 EVAL_MAX_TURNS = 3
 MIN_ACCURACY = 0.75  # regression gate (tune to your measured baseline)

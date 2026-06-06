@@ -34,8 +34,10 @@ _ASSESS_SYS = (
     "From the transcript, rate how likely the SPEAKER is being deceptive — lying, "
     "strategically misleading without literal falsehood, or confabulating — on a 0..1 "
     "scale (0 = clearly honest, 1 = clearly deceptive). Watch for evasion, shifting "
-    "stories, over-specification, and dodged questions. Give a one-line rationale and "
-    "cite the most suspicious statement id as evidence."
+    "stories, over-specification, and dodged questions. Most speakers are honest: keep "
+    "suspicion below 0.5 unless there is clear evasion, a contradiction, or an "
+    "implausible claim — not mere brevity, nerves, or a defensive tone. Give a one-line "
+    "rationale and cite the most suspicious statement id as evidence."
 )
 
 

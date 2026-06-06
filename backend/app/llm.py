@@ -11,6 +11,7 @@ never at import time, so importing this module never needs keys.
 
 from __future__ import annotations
 
+import os
 from typing import Any, TypeVar, cast
 
 import weave
@@ -30,6 +31,10 @@ def init_weave(project: str | None = None) -> None:
     global _weave_ready
     if _weave_ready:
         return
+    # wandb/weave authenticate from the environment; surface the key from settings
+    # (.env) so `make api` / scripts work without a separately-exported key.
+    if settings.wandb_api_key:
+        os.environ.setdefault("WANDB_API_KEY", settings.wandb_api_key)
     weave.init(project or settings.weave_project)
     _weave_ready = True
 

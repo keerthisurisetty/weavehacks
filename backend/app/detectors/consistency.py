@@ -18,6 +18,7 @@ from app.detectors.vector_store import VectorStore
 from app.models import DetectorSignal, Role, Utterance
 
 NAME = "consistency_auditor"
+CONTRADICTION_THRESHOLD = 0.5  # below this no contradiction was found -> abstain
 
 _SYS = (
     "You audit a speaker for self-contradiction. Compare the NEW statement against "
@@ -39,7 +40,7 @@ class ConsistencyAuditor:
         claim = next((u for u in reversed(transcript) if u.role is Role.SPEAKER), None)
         if claim is None:
             return DetectorSignal(
-                detector=NAME, suspicion=0.0, rationale="no speaker statement yet"
+                detector=NAME, suspicion=0.0, rationale="no speaker statement yet", abstained=True
             )
 
         emb = await llm.embed_text(claim.text)
@@ -57,6 +58,7 @@ class ConsistencyAuditor:
                 suspicion=0.0,
                 rationale="no prior statements to compare against",
                 utterance_ref=claim.id,
+                abstained=True,
             )
 
         prior_text = "\n".join(f"[{i}] {t}" for i, t in priors)
@@ -69,10 +71,12 @@ class ConsistencyAuditor:
             },
         ]
         a = await llm.structured_call(messages, Assessment, temperature=0.1)
+        # A contradiction-finder only votes when it actually catches one.
         return DetectorSignal(
             detector=NAME,
             suspicion=a.suspicion,
             rationale=a.rationale,
             evidence=a.evidence,
             utterance_ref=claim.id,
+            abstained=a.suspicion < CONTRADICTION_THRESHOLD,
         )

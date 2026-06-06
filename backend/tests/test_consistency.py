@@ -47,6 +47,7 @@ async def test_first_statement_has_no_priors(monkeypatch: pytest.MonkeyPatch) ->
     )
     assert sig.suspicion == 0.0
     assert sig.utterance_ref == "s1"
+    assert sig.abstained is True  # nothing to compare against -> abstains
 
 
 async def test_contradiction_raises_suspicion_and_cites_prior(
@@ -72,6 +73,7 @@ async def test_contradiction_raises_suspicion_and_cites_prior(
     assert sig.suspicion == 0.9
     assert sig.evidence == "s1"
     assert sig.utterance_ref == "s2"
+    assert sig.abstained is False  # caught a contradiction -> votes
 
 
 async def test_consistent_statement_stays_low(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -88,3 +90,4 @@ async def test_consistent_statement_stays_low(monkeypatch: pytest.MonkeyPatch) -
     s2 = Utterance(id="s2", role=Role.SPEAKER, text="the dinner was personal")
     sig = await auditor.assess("t", [s1, s2])
     assert sig.suspicion == 0.1
+    assert sig.abstained is True  # no contradiction found -> abstains (doesn't vote "honest")

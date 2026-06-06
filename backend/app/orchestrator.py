@@ -28,6 +28,7 @@ from app.speaker import Speaker
 
 DEFAULT_MAX_TURNS = 4
 SHORT_CIRCUIT_CONFIDENCE = 0.85
+MIN_TURNS_BEFORE_CALL = 2  # apply some pressure before ending early
 
 
 def compute_progress(phase: Phase, turns_done: int, max_turns: int) -> int:
@@ -118,9 +119,15 @@ async def run_round(
 
         await _progress(emit, Phase.INTERROGATION, turn, max_turns)
 
-        # The adjudicator owns when-to-call: stop early once confident enough.
+        # The adjudicator owns when-to-call: end early only to CALL a deception,
+        # and only after a few turns of pressure — never end early on a (possibly
+        # over-confident) honest read, which is how a smooth liar slips through.
         interim = adjudicator.fuse(list(latest.values()))
-        if interim.confidence >= SHORT_CIRCUIT_CONFIDENCE:
+        if (
+            interim.label == "deceptive"
+            and interim.confidence >= SHORT_CIRCUIT_CONFIDENCE
+            and turn >= MIN_TURNS_BEFORE_CALL
+        ):
             verdict = interim
             break
 

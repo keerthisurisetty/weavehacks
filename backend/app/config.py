@@ -6,11 +6,16 @@ they're only required when actually calling a model / Weave (PR2+).
 
 from __future__ import annotations
 
+from pathlib import Path
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+# Load .env from the repo root regardless of CWD (api/eval/demo run from backend/).
+_ENV_FILE = Path(__file__).resolve().parents[2] / ".env"
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+    model_config = SettingsConfigDict(env_file=_ENV_FILE, extra="ignore")
 
     # Secrets (required at call time, optional at import/test time).
     openai_api_key: str | None = None

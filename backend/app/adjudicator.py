@@ -38,21 +38,23 @@ class Adjudicator:
 
     @weave.op
     def fuse(self, signals: list[DetectorSignal]) -> Verdict:
-        if not signals:
+        # Only detectors that actually have something to say get a vote.
+        active = [s for s in signals if not s.abstained]
+        if not active:
             return Verdict(label="honest", confidence=0.5)
 
-        weights = [self._weight(s.detector) for s in signals]
+        weights = [self._weight(s.detector) for s in active]
         wsum = sum(weights)
-        mean = sum(w * s.suspicion for w, s in zip(weights, signals, strict=False)) / wsum
+        mean = sum(w * s.suspicion for w, s in zip(weights, active, strict=False)) / wsum
 
         label: Label = "deceptive" if mean >= self.threshold else "honest"
         confidence = mean if label == "deceptive" else 1.0 - mean
         # Most decisive = furthest from "unsure" (0.5), scaled by method weight.
-        decisive = max(signals, key=lambda s: self._weight(s.detector) * abs(s.suspicion - 0.5))
+        decisive = max(active, key=lambda s: self._weight(s.detector) * abs(s.suspicion - 0.5))
 
         return Verdict(
             label=label,
             confidence=round(confidence, 4),
-            contributing_signals=[f"{s.detector}:{s.suspicion:.2f}" for s in signals],
+            contributing_signals=[f"{s.detector}:{s.suspicion:.2f}" for s in active],
             decisive_detector=decisive.detector,
         )

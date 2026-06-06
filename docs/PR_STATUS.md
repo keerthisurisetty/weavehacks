@@ -17,3 +17,4 @@ One line per PR. Tick a box only when the green gate passes **and** the PR's
 - [x] PR11 courtroom frontend (functional; design restyle pending)
 - [x] PR12 demo harness + polish + submission
 - [x] PR13 (post-plan) UI rounds trace to Weave (weave.init at API startup)
+- [x] PR14 (post-plan) real-run fixes: load .env from repo root + surface W&B key; detector abstention (no-evidence != honest); deception-only short-circuit + min turns; detector calibration; quiet weave serializer warning
