@@ -8,8 +8,7 @@ from __future__ import annotations
 
 import weave
 
-from app import llm
-from app.detectors.base import Assessment, last_speaker_ref, render_transcript
+from app.detectors.base import last_speaker_ref, render_transcript, sampled_assessment
 from app.models import DetectorSignal, Utterance
 
 NAME = "behavioral_analyst"
@@ -30,7 +29,7 @@ class BehavioralAnalyst:
             {"role": "system", "content": _SYS.format(topic=topic)},
             {"role": "user", "content": render_transcript(transcript)},
         ]
-        a = await llm.structured_call(messages, Assessment, temperature=0.2)
+        a = await sampled_assessment(messages)
         return DetectorSignal(
             detector=NAME,
             suspicion=a.suspicion,

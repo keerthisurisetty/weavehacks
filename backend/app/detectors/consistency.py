@@ -13,7 +13,7 @@ from __future__ import annotations
 import weave
 
 from app import llm
-from app.detectors.base import Assessment
+from app.detectors.base import sampled_assessment
 from app.detectors.vector_store import VectorStore
 from app.models import DetectorSignal, Role, Utterance
 
@@ -70,7 +70,7 @@ class ConsistencyAuditor:
                 f"NEAREST EARLIER STATEMENTS:\n{prior_text}",
             },
         ]
-        a = await llm.structured_call(messages, Assessment, temperature=0.1)
+        a = await sampled_assessment(messages)
         # A contradiction-finder only votes when it actually catches one.
         return DetectorSignal(
             detector=NAME,

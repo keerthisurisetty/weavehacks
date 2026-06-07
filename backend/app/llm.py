@@ -52,6 +52,15 @@ def get_client() -> AsyncOpenAI:
     return _client
 
 
+def detector_model() -> str:
+    """Model the detector panel runs on (APR1).
+
+    Detectors can use a cheaper model than the speaker so k-sampling is affordable;
+    ``OPENAI_DETECTOR_MODEL`` selects it, falling back to the speaker's model.
+    """
+    return settings.openai_detector_model or settings.openai_model
+
+
 @weave.op
 async def structured_call(
     messages: list[dict[str, str]],

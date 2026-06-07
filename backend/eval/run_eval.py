@@ -28,7 +28,7 @@ from app.detectors.behavioral import BehavioralAnalyst
 from app.detectors.consistency import ConsistencyAuditor
 from app.detectors.cross_examiner import CrossExaminer
 from app.detectors.vector_store import InMemoryVectorStore
-from app.llm import init_weave
+from app.llm import detector_model, init_weave
 from app.models import Mode, SpeakerConfig
 from app.orchestrator import run_round
 
@@ -212,7 +212,16 @@ def _parse_args() -> argparse.Namespace:
     p.add_argument("--max-turns", type=int, default=EVAL_MAX_TURNS)
     p.add_argument("--concurrency", type=int, default=8)
     p.add_argument("--seed", type=int, default=DEFAULT_SEED, help="dev/test split seed")
-    p.add_argument("--model", default=None, help="override OPENAI_MODEL for this run")
+    p.add_argument("--model", default=None, help="override OPENAI_MODEL (speaker + default)")
+    p.add_argument(
+        "--detector-model", default=None, help="OPENAI_DETECTOR_MODEL (detector panel only)"
+    )
+    p.add_argument(
+        "--detector-samples", type=int, default=None, help="k judgments per detector (APR1)"
+    )
+    p.add_argument(
+        "--detector-temp", type=float, default=None, help="detector sampling temperature (APR1)"
+    )
     p.add_argument("--gate", action="store_true", help="exit 1 if panel regresses (CI)")
     p.add_argument(
         "--trace",
@@ -228,6 +237,12 @@ async def main() -> None:
     args = _parse_args()
     if args.model:
         settings.openai_model = args.model
+    if args.detector_model:
+        settings.openai_detector_model = args.detector_model
+    if args.detector_samples is not None:
+        settings.detector_samples = args.detector_samples
+    if args.detector_temp is not None:
+        settings.detector_temperature = args.detector_temp
     # Skip Weave init for the metric suites: tracing every op throttles the
     # concurrent sweep ~6x, and the harness needs no traces to compute metrics.
     # @weave.op stays everywhere; the weave suite (and --trace) still init it.
@@ -237,7 +252,9 @@ async def main() -> None:
     rows = select_split(DATASET, args.split, seed=args.seed)
     print(
         f"=== Tell eval | split={args.split} (n={len(rows)}) | suite={args.suite} "
-        f"| model={settings.openai_model} | max_turns={args.max_turns} ==="
+        f"| speaker={settings.openai_model} | detectors={detector_model()} "
+        f"k={settings.detector_samples} t={settings.detector_temperature} "
+        f"| max_turns={args.max_turns} ==="
     )
 
     panel: Metrics | None = None

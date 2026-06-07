@@ -14,8 +14,7 @@ dialogue, the panel isn't earning its keep — that's exactly what this measures
 from __future__ import annotations
 
 import weave
-from app import llm
-from app.detectors.base import Assessment, last_speaker_ref, render_transcript
+from app.detectors.base import last_speaker_ref, render_transcript, sampled_assessment
 from app.models import DetectorSignal, Utterance
 
 NAME = "zero_shot"
@@ -39,7 +38,9 @@ class ZeroShotJudge:
             {"role": "system", "content": _SYS.format(topic=topic)},
             {"role": "user", "content": render_transcript(transcript)},
         ]
-        a = await llm.structured_call(messages, Assessment, temperature=0.2)
+        # Single call (k=1) — the baseline stays naive — but on the detector model
+        # at temp 0 so it's a fair, stable bar for the panel to beat.
+        a = await sampled_assessment(messages, k=1)
         return DetectorSignal(
             detector=NAME,
             suspicion=a.suspicion,
