@@ -65,3 +65,35 @@ def test_all_abstained_is_uncertain_honest() -> None:
         [DetectorSignal(detector="consistency_auditor", suspicion=0.0, abstained=True)]
     )
     assert v.label == "honest" and v.confidence == 0.5
+
+
+# --- APR5: calibration map -----------------------------------------------------
+def test_calibration_maps_fused_score_and_uses_its_threshold() -> None:
+    # sigmoid(10*mean - 5): mean 0.5 -> 0.5; mean 0.4 -> sigmoid(-1) ~ 0.269
+    adj = Adjudicator(calibration={"a": 10.0, "b": -5.0, "threshold": 0.5})
+    v = adj.fuse([_sig("x", 0.5)])
+    assert v.label == "deceptive" and abs(v.confidence - 0.5) < 1e-3
+    v2 = adj.fuse([_sig("x", 0.4)])
+    assert v2.label == "honest" and abs(v2.confidence - (1 - 0.2689)) < 1e-2
+
+
+def test_no_calibration_falls_back_to_raw_mean() -> None:
+    # default (no calibration) is unchanged: mean 0.7 -> deceptive, confidence 0.7
+    v = Adjudicator().fuse([_sig("x", 0.7)])
+    assert v.label == "deceptive" and v.confidence == 0.7
+
+
+def test_load_calibration_missing_is_none(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    from app.adjudicator import load_calibration
+
+    assert load_calibration(tmp_path / "nope.json") is None
+
+
+def test_load_calibration_reads_params(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    import json
+
+    from app.adjudicator import load_calibration
+
+    p = tmp_path / "calibration.json"
+    p.write_text(json.dumps({"a": 4.0, "b": -2.0, "threshold": 0.45}))
+    assert load_calibration(p) == {"a": 4.0, "b": -2.0, "threshold": 0.45}

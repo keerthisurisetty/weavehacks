@@ -12,7 +12,7 @@ import weave
 from pydantic import BaseModel
 
 from app import llm
-from app.detectors.base import Assessment, last_speaker_ref, render_transcript
+from app.detectors.base import last_speaker_ref, render_transcript, sampled_assessment
 from app.models import DetectorSignal, Utterance
 
 NAME = "cross_examiner"
@@ -57,7 +57,7 @@ class CrossExaminer:
             {"role": "system", "content": _ASSESS_SYS.format(topic=topic)},
             {"role": "user", "content": render_transcript(transcript)},
         ]
-        a = await llm.structured_call(messages, Assessment, temperature=0.2)
+        a = await sampled_assessment(messages)
         return DetectorSignal(
             detector=NAME,
             suspicion=a.suspicion,

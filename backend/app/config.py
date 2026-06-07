@@ -26,5 +26,15 @@ class Settings(BaseSettings):
     redis_url: str = "redis://localhost:6379"
     weave_project: str = "tell"
 
+    # Detector sampling (APR1 — variance reduction). Detectors are *judges*, so
+    # they run deterministically (temp 0); that alone lifted same-round label
+    # stability 0.775 -> 0.90 on dev. k-sampling added nothing measurable on top of
+    # temp 0 (the residual variance is the stochastic speaker, not the judges), so
+    # k defaults to 1; the median machinery stays for self-consistency at temp>0
+    # (APR4). Detectors may run on a cheaper model than the speaker.
+    openai_detector_model: str | None = None  # None -> fall back to openai_model
+    detector_samples: int = 1  # k judgments per detector; median suspicion wins
+    detector_temperature: float = 0.0
+
 
 settings = Settings()

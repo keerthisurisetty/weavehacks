@@ -11,7 +11,7 @@ from __future__ import annotations
 import weave
 
 from app import llm
-from app.detectors.base import Assessment, last_speaker_ref
+from app.detectors.base import last_speaker_ref, sampled_assessment
 from app.models import DetectorSignal, Role, Utterance
 
 NAME = "evidence_checker"
@@ -50,7 +50,7 @@ class EvidenceChecker:
                 "content": f"CLAIM [{claim.id}]: {claim.text}\n\nEVIDENCE:\n{evidence}",
             },
         ]
-        a = await llm.structured_call(messages, Assessment, temperature=0.1)
+        a = await sampled_assessment(messages)
         return DetectorSignal(
             detector=NAME,
             suspicion=a.suspicion,

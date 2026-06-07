@@ -17,7 +17,7 @@ from collections.abc import Awaitable, Callable
 import weave
 
 from app import memory
-from app.adjudicator import Adjudicator
+from app.adjudicator import Adjudicator, load_calibration
 from app.detectors.base import Detector
 from app.detectors.cross_examiner import CrossExaminer
 from app.detectors.panel import default_panel
@@ -112,7 +112,7 @@ async def run_round(
         )
     elif examiner is None:
         examiner = CrossExaminer()
-    adjudicator = Adjudicator()
+    adjudicator = Adjudicator(calibration=load_calibration())
 
     transcript = rnd.transcript
     signals = rnd.signals
