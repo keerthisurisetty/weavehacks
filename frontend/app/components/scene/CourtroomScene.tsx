@@ -12,7 +12,7 @@
 
 import { useEffect, useState } from "react";
 import "../../courtroomScene.css";
-import { CASES, DETECTORS, type DetectorKey } from "../../lib/identities";
+import { CASES, DETECTORS, type DetectorKey, SCRIPTED_CASE_IDX } from "../../lib/identities";
 import type { CourtroomState, Line } from "../../lib/types";
 import { useCourtroom } from "../../lib/useCourtroom";
 import { exprFromSus, Scales } from "./Characters";
@@ -66,7 +66,6 @@ export function CourtroomScene() {
   const { state, startLive, startDemo, ask, jumpFinal, restart, step } = useCourtroom();
   const [selIdx, setSelIdx] = useState(1); // default: the strategic-deception hero
   const [overlay, setOverlay] = useState(true);
-  const [live, setLive] = useState(true);
   const [caseOpen, setCaseOpen] = useState(false);
   const [scale, setScale] = useState(1);
 
@@ -103,19 +102,23 @@ export function CourtroomScene() {
     };
   }, [jumpFinal]);
 
+  // The scripted case runs the deterministic demo; every other case runs the live panel.
+  const launch = (idx: number) => {
+    if (idx === SCRIPTED_CASE_IDX) void startDemo(idx);
+    else startLive(idx);
+  };
+
   const begin = () => {
     setOverlay(false);
     setCaseOpen(false);
-    if (live) startLive(selIdx);
-    else void startDemo(selIdx);
+    launch(selIdx);
   };
 
   const next = () => {
     const n = (selIdx + 1) % CASES.length;
     setSelIdx(n);
     setCaseOpen(false);
-    if (live) startLive(n);
-    else void startDemo(n);
+    launch(n);
   };
 
   // ---- derive scene inputs from live state ----
@@ -258,8 +261,6 @@ export function CourtroomScene() {
             <Overlay
               selIdx={selIdx}
               setSelIdx={setSelIdx}
-              live={live}
-              onLive={setLive}
               onStart={begin}
             />
           )}

@@ -424,14 +424,10 @@ export function Rail({
 export function Overlay({
   selIdx,
   setSelIdx,
-  live,
-  onLive,
   onStart,
 }: {
   selIdx: number;
   setSelIdx: (i: number) => void;
-  live: boolean;
-  onLive: (v: boolean) => void;
   onStart: () => void;
 }) {
   const r = CASES[selIdx];
@@ -445,14 +441,6 @@ export function Overlay({
           A panel of detector agents puts an AI witness on the stand. The prosecutor cross-examines, the jury
           weighs every word, and the scales of justice tip in real time — until the Judge brings down the
           gavel and the truth is revealed.
-        </div>
-        <div className="ov-modes">
-          <div className={"ov-mode" + (live ? " sel" : "")} onClick={() => onLive(true)}>
-            ● LIVE — real backend
-          </div>
-          <div className={"ov-mode" + (!live ? " sel" : "")} onClick={() => onLive(false)}>
-            ▶ DEMO — scripted
-          </div>
         </div>
         <button className="start-btn" onClick={onStart}>
           ⚖ CALL THE COURT TO ORDER
@@ -468,10 +456,7 @@ export function Overlay({
             </div>
           ))}
         </div>
-        <div className="blurb">
-          {r.blurb}
-          {live ? " — runs the real panel (a few seconds per turn)." : " — deterministic, instant."}
-        </div>
+        <div className="blurb">{r.blurb}</div>
       </div>
     </div>
   );
