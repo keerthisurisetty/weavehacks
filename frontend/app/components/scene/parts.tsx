@@ -354,6 +354,8 @@ export function Rail({
   lastLine,
   onAsk,
   askable,
+  onStep,
+  canStep,
   onReplay,
   onMenu,
   onCaseFile,
@@ -362,6 +364,8 @@ export function Rail({
   lastLine: string;
   onAsk: (q: string) => void;
   askable: boolean;
+  onStep: () => void;
+  canStep: boolean;
   onReplay: () => void;
   onMenu: () => void;
   onCaseFile: () => void;
@@ -381,6 +385,15 @@ export function Rail({
         <div className="rt">{lastLine || "— awaiting testimony —"}</div>
       </div>
       <div className="hitl">
+        <button
+          className="btn green"
+          onClick={onStep}
+          disabled={!canStep}
+          title="Advance the trial one exchange — one question, one answer, then the panel reacts."
+          style={{ fontSize: 19 }}
+        >
+          ▷ STEP
+        </button>
         <input
           value={q}
           disabled={!askable}
@@ -414,14 +427,12 @@ export function Overlay({
   live,
   onLive,
   onStart,
-  onStep,
 }: {
   selIdx: number;
   setSelIdx: (i: number) => void;
   live: boolean;
   onLive: (v: boolean) => void;
   onStart: () => void;
-  onStep: () => void;
 }) {
   const r = CASES[selIdx];
   return (
@@ -446,14 +457,9 @@ export function Overlay({
         <button className="start-btn" onClick={onStart}>
           ⚖ CALL THE COURT TO ORDER
         </button>
-        <button
-          className="start-btn"
-          onClick={onStep}
-          style={{ marginTop: 12, fontSize: 18, background: "var(--blue)", padding: "9px 22px" }}
-          title="Runs a single live exchange — one question, one answer, each detector thinks once, then the verdict."
-        >
-          ▷ STEP — ONE LIVE EXCHANGE
-        </button>
+        <div className="blurb" style={{ marginTop: 10 }}>
+          Then hit <b style={{ color: "var(--green)" }}>▷ STEP</b> to advance one exchange at a time.
+        </div>
         <div className="picker">
           {CASES.map((rd, i) => (
             <div key={rd.topic} className={"pick" + (i === selIdx ? " sel" : "")} onClick={() => setSelIdx(i)}>

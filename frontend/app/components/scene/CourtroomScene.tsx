@@ -63,7 +63,7 @@ function courtRecord(state: CourtroomState): string {
 }
 
 export function CourtroomScene() {
-  const { state, startLive, startDemo, ask, jumpFinal, restart } = useCourtroom();
+  const { state, startLive, startDemo, ask, jumpFinal, restart, step } = useCourtroom();
   const [selIdx, setSelIdx] = useState(1); // default: the strategic-deception hero
   const [overlay, setOverlay] = useState(true);
   const [live, setLive] = useState(true);
@@ -108,14 +108,6 @@ export function CourtroomScene() {
     setCaseOpen(false);
     if (live) startLive(selIdx);
     else void startDemo(selIdx);
-  };
-
-  // Single live exchange: one question, one answer, each detector thinks once,
-  // then the verdict — the step-by-step demo round.
-  const step = () => {
-    setOverlay(false);
-    setCaseOpen(false);
-    startLive(selIdx, 1);
   };
 
   const next = () => {
@@ -249,6 +241,8 @@ export function CourtroomScene() {
             lastLine={courtRecord(state)}
             onAsk={ask}
             askable={askable}
+            onStep={step}
+            canStep={state.status !== "idle" && !state.revealed}
             onReplay={restart}
             onMenu={() => {
               setOverlay(true);
@@ -267,7 +261,6 @@ export function CourtroomScene() {
               live={live}
               onLive={setLive}
               onStart={begin}
-              onStep={step}
             />
           )}
         </div>
