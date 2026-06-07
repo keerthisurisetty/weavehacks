@@ -1,5 +1,5 @@
-import { Courtroom } from "./components/Courtroom";
+import { SkinSwitcher } from "./components/SkinSwitcher";
 
 export default function Home() {
-  return <Courtroom />;
+  return <SkinSwitcher />;
 }

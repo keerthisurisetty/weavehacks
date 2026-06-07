@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Bebas_Neue, Courier_Prime, IBM_Plex_Mono, Space_Mono } from "next/font/google";
+import { Bangers, Bebas_Neue, Courier_Prime, IBM_Plex_Mono, Space_Mono } from "next/font/google";
 import "./courtroom.css";
 
 const bebas = Bebas_Neue({ weight: "400", subsets: ["latin"], variable: "--font-bebas" });
@@ -10,6 +10,8 @@ const courier = Courier_Prime({
   variable: "--font-courier",
 });
 const plex = IBM_Plex_Mono({ weight: ["400", "500"], subsets: ["latin"], variable: "--font-plex" });
+// Comic "BANG!" burst for the courtroom scene skin (--font-comic).
+const bangers = Bangers({ weight: "400", subsets: ["latin"], variable: "--font-comic-bangers" });
 
 export const metadata = {
   title: "Tell — The Interrogation Room",
@@ -17,7 +19,7 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
-  const fontVars = `${bebas.variable} ${spaceMono.variable} ${courier.variable} ${plex.variable}`;
+  const fontVars = `${bebas.variable} ${spaceMono.variable} ${courier.variable} ${plex.variable} ${bangers.variable}`;
   // suppressHydrationWarning: browser extensions (Grammarly, etc.) inject
   // attributes onto <html>/<body> before React hydrates — harmless, but noisy.
   return (
