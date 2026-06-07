@@ -11,7 +11,7 @@ from __future__ import annotations
 import weave
 
 from app import llm
-from app.detectors.base import Assessment, last_speaker_ref
+from app.detectors.base import last_speaker_ref, sampled_assessment
 from app.models import DetectorSignal, Role, Utterance
 
 NAME = "evidence_checker"
@@ -50,11 +50,17 @@ class EvidenceChecker:
                 "content": f"CLAIM [{claim.id}]: {claim.text}\n\nEVIDENCE:\n{evidence}",
             },
         ]
-        a = await llm.structured_call(messages, Assessment, temperature=0.1)
+        a = await sampled_assessment(messages)
+        # Evidence found but inconclusive: a near-neutral score means it neither
+        # corroborated nor contradicted the claim. Abstain instead of casting a
+        # ~0.5 vote that, at this detector's weight, would still tug the verdict.
+        # Only speak up when the evidence actually moves us off neutral.
+        inconclusive = abs(a.suspicion - 0.5) < 0.15
         return DetectorSignal(
             detector=NAME,
             suspicion=a.suspicion,
             rationale=a.rationale,
             evidence=a.evidence,
             utterance_ref=last_speaker_ref(transcript),
+            abstained=inconclusive,
         )

@@ -32,3 +32,6 @@ BLOCKED.md
 # local-only tooling
 .claude/launch.json
 .claude/settings.local.json
+
+# raw eval-run logs (reproducible; curated numbers live in docs/ACCURACY_BASELINE.md)
+docs/eval_runs/

@@ -54,6 +54,7 @@ export interface Courtroom {
   state: CourtroomState;
   startLive: (caseIdx: number) => void;
   startDemo: (caseIdx: number) => void;
+  step: () => void;
   ask: (q: string) => void;
   jumpFinal: () => void;
   restart: () => void;
@@ -69,6 +70,10 @@ export function useCourtroom(): Courtroom {
   const typing = useRef(false);
   const mode = useRef<"live" | "demo">("live");
   const caseIdxRef = useRef(0);
+  // --- manual stepping: reveal the round one exchange at a time on STEP ----
+  const buffer = useRef<RoundEvent[]>([]); // live events received but not yet revealed
+  const revealing = useRef(false); // a step is currently animating
+  const stepWaiters = useRef<Array<() => void>>([]); // demo: gates resolved by step()
 
   const patch = useCallback((p: Partial<CourtroomState>) => setState((s) => ({ ...s, ...p })), []);
 
@@ -101,6 +106,9 @@ export function useCourtroom(): Courtroom {
     }
     queue.current = [];
     typing.current = false;
+    buffer.current = [];
+    revealing.current = false;
+    stepWaiters.current.splice(0).forEach((w) => w()); // release any pending demo gate
     setState({ ...INITIAL, dets: freshDets() });
     return gen.current;
   }, []);
@@ -222,7 +230,8 @@ export function useCourtroom(): Courtroom {
     [fireSpike],
   );
 
-  const handleEvent = useCallback(
+  // Apply a non-utterance event (progress / signal / verdict / reveal) immediately.
+  const applyOther = useCallback(
     (ev: RoundEvent, myGen: number) => {
       if (gen.current !== myGen) return;
       if (ev.kind === "progress") {
@@ -232,11 +241,6 @@ export function useCourtroom(): Courtroom {
           banner: PHASE_BANNER[ph] ?? "",
           progress: typeof ev.progress === "number" ? ev.progress : 0,
         });
-      } else if (ev.kind === "utterance" && ev.utterance) {
-        const r = ev.utterance.role;
-        const who: Line["who"] = r === "speaker" ? "speaker" : r === "human" ? "human" : "ce";
-        queue.current.push({ who, text: ev.utterance.text });
-        pump(myGen);
       } else if (ev.kind === "signal" && ev.signal) {
         applySignal(ev.signal, myGen);
       } else if (ev.kind === "verdict" && ev.verdict) {
@@ -253,8 +257,68 @@ export function useCourtroom(): Courtroom {
         }));
       }
     },
-    [patch, pump, applySignal, applyVerdict],
+    [patch, applySignal, applyVerdict],
   );
+
+  // Reveal the next exchange from the live buffer: type utterances in order, apply
+  // signals, then stop at the turn boundary (a progress event) or the final reveal.
+  const revealStep = useCallback(
+    (myGen: number) => {
+      const drain = () => {
+        if (gen.current !== myGen) {
+          revealing.current = false;
+          return;
+        }
+        const ev = buffer.current.shift();
+        if (!ev) {
+          revealing.current = false; // ran out — wait for more events + the next STEP
+          return;
+        }
+        if (ev.kind === "utterance" && ev.utterance) {
+          const r = ev.utterance.role;
+          const who: Line["who"] = r === "speaker" ? "speaker" : r === "human" ? "human" : "ce";
+          typing.current = true;
+          typeChars({ who, text: ev.utterance.text }, myGen, () => {
+            typing.current = false;
+            drain();
+          });
+        } else {
+          applyOther(ev, myGen);
+          const boundary =
+            (ev.kind === "progress" && ev.phase === "interrogation") || ev.kind === "reveal";
+          if (boundary) {
+            revealing.current = false;
+            return;
+          }
+          drain();
+        }
+      };
+      drain();
+    },
+    [typeChars, applyOther],
+  );
+
+  // Demo gate: pause the scripted player until the next STEP click.
+  const gateStep = useCallback(
+    (myGen: number) =>
+      new Promise<void>((res) => {
+        if (gen.current !== myGen) return res();
+        stepWaiters.current.push(res);
+      }),
+    [],
+  );
+
+  // The STEP button: live → reveal the next buffered exchange; demo → release the gate.
+  const step = useCallback(() => {
+    if (mode.current === "live") {
+      if (revealing.current) return;
+      revealing.current = true;
+      revealStep(gen.current);
+    } else {
+      const w = stepWaiters.current.shift();
+      if (w) w();
+    }
+  }, [revealStep]);
 
   const startLive = useCallback(
     (caseIdx: number) => {
@@ -271,9 +335,11 @@ export function useCourtroom(): Courtroom {
         return;
       }
       ws.current = sock;
+      // Stepped: buffer every event; the STEP button reveals one exchange at a time.
       sock.onmessage = (e: MessageEvent) => {
+        if (gen.current !== myGen) return;
         try {
-          handleEvent(JSON.parse(e.data) as RoundEvent, myGen);
+          buffer.current.push(JSON.parse(e.data) as RoundEvent);
         } catch {
           /* ignore malformed */
         }
@@ -285,7 +351,7 @@ export function useCourtroom(): Courtroom {
         if (gen.current === myGen) setState((s) => (s.status === "running" ? { ...s, status: "done" } : s));
       };
     },
-    [reset, patch, startClock, handleEvent],
+    [reset, patch, startClock],
   );
 
   // ---- scripted demo driver --------------------------------------------
@@ -307,6 +373,12 @@ export function useCourtroom(): Courtroom {
 
       for (const stp of rnd.script) {
         if (gen.current !== myGen) return;
+        // Stepped: pause before each new exchange (cross-examiner question) and the
+        // verdict, until the STEP button is clicked.
+        if ((stp.k === "say" && stp.who === "ce") || stp.k === "verdict") {
+          await gateStep(myGen);
+          if (gen.current !== myGen) return;
+        }
         if (stp.k === "phase") {
           patch({ phaseIdx: PHASES.indexOf(stp.phase), banner: stp.banner ?? "" });
           if (stp.phase === "SETUP") {
@@ -374,7 +446,7 @@ export function useCourtroom(): Courtroom {
         }
       }
     },
-    [reset, patch, startClock, typeChars, elapsed, fireSpike],
+    [reset, patch, startClock, typeChars, elapsed, fireSpike, gateStep],
   );
 
   const ask = useCallback(
@@ -482,5 +554,5 @@ export function useCourtroom(): Courtroom {
     [],
   );
 
-  return { state, startLive, startDemo, ask, jumpFinal, restart };
+  return { state, startLive, startDemo, ask, jumpFinal, restart, step };
 }
