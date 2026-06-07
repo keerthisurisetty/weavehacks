@@ -51,10 +51,16 @@ class EvidenceChecker:
             },
         ]
         a = await sampled_assessment(messages)
+        # Evidence found but inconclusive: a near-neutral score means it neither
+        # corroborated nor contradicted the claim. Abstain instead of casting a
+        # ~0.5 vote that, at this detector's weight, would still tug the verdict.
+        # Only speak up when the evidence actually moves us off neutral.
+        inconclusive = abs(a.suspicion - 0.5) < 0.15
         return DetectorSignal(
             detector=NAME,
             suspicion=a.suspicion,
             rationale=a.rationale,
             evidence=a.evidence,
             utterance_ref=last_speaker_ref(transcript),
+            abstained=inconclusive,
         )

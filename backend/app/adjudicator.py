@@ -81,11 +81,20 @@ class Adjudicator:
         if not active:
             return Verdict(label="honest", confidence=0.5)
 
-        weights = [self._weight(s.detector) for s in active]
-        wsum = sum(weights)
-        mean = sum(w * s.suspicion for w, s in zip(weights, active, strict=False)) / wsum
+        # Disjunctive fusion (NOT an average). Each detector hunts a distinct
+        # deception mode, so a single reliable detector firing is enough — a liar
+        # who is perfectly consistent still gets caught by evidence. Calm detectors
+        # cannot dilute a real catch: only ABOVE-neutral suspicion counts as
+        # evidence of deception, combined as a reliability-weighted noisy-OR.
+        #   evidence_i = max(0, 2*(suspicion_i - 0.5))   in [0, 1]
+        #   raw        = 1 - Π (1 - evidence_i) ** weight_i
+        prod = 1.0
+        for s in active:
+            evidence = max(0.0, 2.0 * (s.suspicion - 0.5))
+            prod *= (1.0 - evidence) ** self._weight(s.detector)
+        raw = 1.0 - prod
 
-        p_deceptive, threshold = self._calibrate(mean)
+        p_deceptive, threshold = self._calibrate(raw)
         label: Label = "deceptive" if p_deceptive >= threshold else "honest"
         confidence = p_deceptive if label == "deceptive" else 1.0 - p_deceptive
         # Most decisive = furthest from "unsure" (0.5) on the RAW signal, by method weight.
