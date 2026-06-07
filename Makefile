@@ -2,7 +2,7 @@ SHELL := /bin/bash
 VENV := .venv
 BIN := $(VENV)/bin
 
-.PHONY: install redis down api web test test-agent eval check fmt clean
+.PHONY: install redis down api web test test-agent eval check fmt clean start
 
 install:  ## create the venv, install backend + frontend deps
 	uv venv $(VENV) --python 3.11
@@ -14,6 +14,9 @@ redis:  ## start Redis Stack (6379 = redis, 8001 = RedisInsight)
 
 down:  ## stop docker services
 	docker compose down
+
+start:  ## start all services (Redis, API, Web) — the one command to run everything
+	@./start.sh
 
 api:  ## run the FastAPI backend (http://localhost:8000)
 	cd backend && ../$(BIN)/uvicorn app.main:app --reload --port 8000
