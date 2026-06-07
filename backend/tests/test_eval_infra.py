@@ -8,7 +8,7 @@ exercised at Tier 2/3 (token cost) via ``make eval``.
 from collections import Counter
 
 from eval.dataset import DATASET
-from eval.harness import Outcome, aggregate, label_stability
+from eval.harness import Outcome, aggregate, label_stability, sweep_thresholds
 from eval.splits import select_split, split_dataset
 
 MODES = ["honest", "lying", "strategic_deception", "hallucinating"]
@@ -113,3 +113,18 @@ def test_label_stability_mixes_modal_and_unanimous() -> None:
 def test_label_stability_empty() -> None:
     stab = label_stability([])
     assert stab["mean_modal_fraction"] == 1.0 and stab["n_rounds"] == 0
+
+
+# --- threshold sweep (offline operating-point search) ------------------------
+def test_sweep_thresholds_relabels_by_fused_suspicion() -> None:
+    outs = [
+        _o("honest", "honest", 0.7),  # p_deceptive 0.3
+        _o("lying", "honest", 0.55),  # p_deceptive 0.45 (a lie the panel under-called)
+    ]
+    table = sweep_thresholds(outs, [0.4, 0.5])
+    # at 0.40: honest stays honest (0.3<0.4), lying flips to deceptive (0.45>=0.4) -> both right
+    assert table[0.4].accuracy == 1.0
+    assert table[0.4].fpr == 0.0
+    # at 0.50: lying stays mislabelled honest (0.45<0.5) -> half right, still no false positive
+    assert table[0.5].accuracy == 0.5
+    assert table[0.5].fpr == 0.0

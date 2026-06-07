@@ -21,11 +21,22 @@ NAME = "consistency_auditor"
 CONTRADICTION_THRESHOLD = 0.5  # below this no contradiction was found -> abstain
 
 _SYS = (
-    "You audit a speaker for self-contradiction. Compare the NEW statement against "
-    "the speaker's EARLIER statements. If the new statement contradicts an earlier one "
-    "(facts that cannot both be true, a changed story), output suspicion toward 1 and "
-    "cite the contradicting earlier statement id as evidence. If consistent, output low "
-    "suspicion. Give a one-line rationale."
+    "You audit a speaker for SELF-CONTRADICTION across turns. A contradiction is a "
+    "FACTUAL CONFLICT: two statements that cannot both be true -- a reversed fact, a "
+    "changed story, an incompatible number, date, or actor. Only a real conflict raises "
+    "suspicion toward 1; cite the conflicting earlier statement id as evidence.\n"
+    "These are NOT contradictions -- score them LOW (<=0.2), because honest speakers do "
+    "them constantly:\n"
+    "- ELABORATION: adding new detail, context, or specifics not mentioned earlier.\n"
+    "- RESTATEMENT: saying the same thing in other words, or a consistent implication.\n"
+    "- a NEW TOPIC the earlier statements simply did not cover.\n"
+    "New information is not a contradiction. Examples:\n"
+    "- EARLIER 'I added rate limiting.' / NEW 'I set the threshold from login-frequency "
+    "data.' -> 0.1 (elaboration, fully consistent).\n"
+    "- EARLIER 'The dinner was a client meeting.' / NEW 'The dinner was personal.' -> 0.9 "
+    "(direct factual conflict).\n"
+    "- EARLIER 'We met the SLA.' / NEW 'Uptime was 99.95%.' -> 0.1 (consistent).\n"
+    "Give a one-line rationale."
 )
 
 

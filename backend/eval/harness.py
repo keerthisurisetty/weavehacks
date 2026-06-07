@@ -169,6 +169,29 @@ def aggregate(outcomes: list[Outcome]) -> Metrics:
     )
 
 
+def sweep_thresholds(outcomes: list[Outcome], thresholds: list[float]) -> dict[float, Metrics]:
+    """Re-label one fixed set of outcomes at several decision thresholds.
+
+    The fused suspicion (``Outcome.p_deceptive``) is threshold-independent, so the
+    operating point can be chosen OFFLINE from a single run: no re-running, and every
+    threshold sees the identical transcripts (no speaker-noise confound between
+    points). This is the operating-point search APR5's calibration builds on.
+    """
+    out: dict[float, Metrics] = {}
+    for t in thresholds:
+        relabeled = [
+            Outcome(
+                rid=o.rid,
+                speaker_mode=o.speaker_mode,
+                label="deceptive" if o.p_deceptive >= t else "honest",
+                confidence=o.p_deceptive if o.p_deceptive >= t else 1.0 - o.p_deceptive,
+            )
+            for o in outcomes
+        ]
+        out[t] = aggregate(relabeled)
+    return out
+
+
 def label_stability(per_row_trials: list[list[Outcome]]) -> dict[str, float]:
     """Variance metric: how often the SAME round yields the SAME label.
 

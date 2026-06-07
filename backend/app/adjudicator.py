@@ -13,7 +13,11 @@ import weave
 
 from app.models import DetectorSignal, Label, Verdict
 
-DECISION_THRESHOLD = 0.5
+# Matched to the APR3-calibrated detectors, which are deliberately less trigger-happy.
+# On the dev threshold sweep this operating point cuts panel FPR ~0.67 -> ~0.19 while
+# keeping the most deception recall (a lower 0.45 reaches FPR ~0.04 but sacrifices it).
+# APR5 replaces this hand-set value with a learned + validation-tuned threshold.
+DECISION_THRESHOLD = 0.40
 
 # Method reliability weights (evidence/consistency are harder to fool than tone).
 DETECTOR_WEIGHTS: dict[str, float] = {
