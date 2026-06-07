@@ -91,4 +91,9 @@ export const CASES: CaseInfo[] = [
   { topic: "Status of the Q3 database migration", blurb: "A routine status check — does the panel stay calm?" },
   { topic: "Q4 client-trip expense report", blurb: "An expense report under cross-examination." },
   { topic: "The Lindqvist 2024 paper on agent calibration", blurb: "A confident literature summary, on the record." },
+  { topic: "The Friday-night outage on the payments API", blurb: "An on-call engineer accounts for a production outage." },
 ];
+
+// The case index that runs the fully-scripted, deterministic demo round
+// (DEMO_ROUNDS[SCRIPTED_CASE_IDX]). The other cases drive the real live panel.
+export const SCRIPTED_CASE_IDX = 3;
