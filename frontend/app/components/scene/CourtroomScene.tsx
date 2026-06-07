@@ -110,6 +110,14 @@ export function CourtroomScene() {
     else void startDemo(selIdx);
   };
 
+  // Single live exchange: one question, one answer, each detector thinks once,
+  // then the verdict — the step-by-step demo round.
+  const step = () => {
+    setOverlay(false);
+    setCaseOpen(false);
+    startLive(selIdx, 1);
+  };
+
   const next = () => {
     const n = (selIdx + 1) % CASES.length;
     setSelIdx(n);
@@ -253,7 +261,14 @@ export function CourtroomScene() {
           {caseOpen && <CaseFile state={state} onClose={() => setCaseOpen(false)} onNext={next} />}
 
           {overlay && (
-            <Overlay selIdx={selIdx} setSelIdx={setSelIdx} live={live} onLive={setLive} onStart={begin} />
+            <Overlay
+              selIdx={selIdx}
+              setSelIdx={setSelIdx}
+              live={live}
+              onLive={setLive}
+              onStart={begin}
+              onStep={step}
+            />
           )}
         </div>
       </div>

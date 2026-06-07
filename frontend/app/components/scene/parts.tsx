@@ -147,7 +147,7 @@ export function JudgeBench({
       <div className="desk">
         <div className="nameplate">
           <div className="nm" style={{ color: "#00FF88" }}>
-            THE ADJUDICATOR
+            THE JUDGE
           </div>
           <div className="pn" style={{ color: "var(--dim)" }}>
             PRESIDING
@@ -414,12 +414,14 @@ export function Overlay({
   live,
   onLive,
   onStart,
+  onStep,
 }: {
   selIdx: number;
   setSelIdx: (i: number) => void;
   live: boolean;
   onLive: (v: boolean) => void;
   onStart: () => void;
+  onStep: () => void;
 }) {
   const r = CASES[selIdx];
   return (
@@ -430,7 +432,7 @@ export function Overlay({
         <div className="gavel-emoji">⚖️</div>
         <div className="desc">
           A panel of detector agents puts an AI witness on the stand. The prosecutor cross-examines, the jury
-          weighs every word, and the scales of justice tip in real time — until the Adjudicator brings down the
+          weighs every word, and the scales of justice tip in real time — until the Judge brings down the
           gavel and the truth is revealed.
         </div>
         <div className="ov-modes">
@@ -443,6 +445,14 @@ export function Overlay({
         </div>
         <button className="start-btn" onClick={onStart}>
           ⚖ CALL THE COURT TO ORDER
+        </button>
+        <button
+          className="start-btn"
+          onClick={onStep}
+          style={{ marginTop: 12, fontSize: 18, background: "var(--blue)", padding: "9px 22px" }}
+          title="Runs a single live exchange — one question, one answer, each detector thinks once, then the verdict."
+        >
+          ▷ STEP — ONE LIVE EXCHANGE
         </button>
         <div className="picker">
           {CASES.map((rd, i) => (

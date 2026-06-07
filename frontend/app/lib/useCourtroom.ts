@@ -52,7 +52,7 @@ const INITIAL: CourtroomState = {
 
 export interface Courtroom {
   state: CourtroomState;
-  startLive: (caseIdx: number) => void;
+  startLive: (caseIdx: number, turns?: number) => void;
   startDemo: (caseIdx: number) => void;
   ask: (q: string) => void;
   jumpFinal: () => void;
@@ -257,15 +257,18 @@ export function useCourtroom(): Courtroom {
   );
 
   const startLive = useCallback(
-    (caseIdx: number) => {
+    // `turns` caps the interrogation length; turns=1 is the single step-through
+    // exchange (one question, one answer, one pass of the panel, then the verdict).
+    (caseIdx: number, turns?: number) => {
       const myGen = reset();
       mode.current = "live";
       caseIdxRef.current = caseIdx;
       patch({ status: "running", gauge: 0.5 });
       startClock(myGen);
       let sock: WebSocket;
+      const url = `${WS_BASE}?case=${caseIdx}${turns ? `&turns=${turns}` : ""}`;
       try {
-        sock = new WebSocket(`${WS_BASE}?case=${caseIdx}`);
+        sock = new WebSocket(url);
       } catch {
         patch({ status: "error" });
         return;
