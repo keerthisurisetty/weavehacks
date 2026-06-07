@@ -63,7 +63,7 @@ function courtRecord(state: CourtroomState): string {
 }
 
 export function CourtroomScene() {
-  const { state, startLive, startDemo, ask, jumpFinal, restart } = useCourtroom();
+  const { state, startLive, startDemo, ask, jumpFinal, restart, step } = useCourtroom();
   const [selIdx, setSelIdx] = useState(1); // default: the strategic-deception hero
   const [overlay, setOverlay] = useState(true);
   const [live, setLive] = useState(true);
@@ -241,6 +241,8 @@ export function CourtroomScene() {
             lastLine={courtRecord(state)}
             onAsk={ask}
             askable={askable}
+            onStep={step}
+            canStep={state.status !== "idle" && !state.revealed}
             onReplay={restart}
             onMenu={() => {
               setOverlay(true);
@@ -253,7 +255,13 @@ export function CourtroomScene() {
           {caseOpen && <CaseFile state={state} onClose={() => setCaseOpen(false)} onNext={next} />}
 
           {overlay && (
-            <Overlay selIdx={selIdx} setSelIdx={setSelIdx} live={live} onLive={setLive} onStart={begin} />
+            <Overlay
+              selIdx={selIdx}
+              setSelIdx={setSelIdx}
+              live={live}
+              onLive={setLive}
+              onStart={begin}
+            />
           )}
         </div>
       </div>

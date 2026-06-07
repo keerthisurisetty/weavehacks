@@ -147,7 +147,7 @@ export function JudgeBench({
       <div className="desk">
         <div className="nameplate">
           <div className="nm" style={{ color: "#00FF88" }}>
-            THE ADJUDICATOR
+            THE JUDGE
           </div>
           <div className="pn" style={{ color: "var(--dim)" }}>
             PRESIDING
@@ -354,6 +354,8 @@ export function Rail({
   lastLine,
   onAsk,
   askable,
+  onStep,
+  canStep,
   onReplay,
   onMenu,
   onCaseFile,
@@ -362,6 +364,8 @@ export function Rail({
   lastLine: string;
   onAsk: (q: string) => void;
   askable: boolean;
+  onStep: () => void;
+  canStep: boolean;
   onReplay: () => void;
   onMenu: () => void;
   onCaseFile: () => void;
@@ -381,6 +385,15 @@ export function Rail({
         <div className="rt">{lastLine || "— awaiting testimony —"}</div>
       </div>
       <div className="hitl">
+        <button
+          className="btn green"
+          onClick={onStep}
+          disabled={!canStep}
+          title="Advance the trial one exchange — one question, one answer, then the panel reacts."
+          style={{ fontSize: 19 }}
+        >
+          ▷ STEP
+        </button>
         <input
           value={q}
           disabled={!askable}
@@ -430,7 +443,7 @@ export function Overlay({
         <div className="gavel-emoji">⚖️</div>
         <div className="desc">
           A panel of detector agents puts an AI witness on the stand. The prosecutor cross-examines, the jury
-          weighs every word, and the scales of justice tip in real time — until the Adjudicator brings down the
+          weighs every word, and the scales of justice tip in real time — until the Judge brings down the
           gavel and the truth is revealed.
         </div>
         <div className="ov-modes">
@@ -444,6 +457,9 @@ export function Overlay({
         <button className="start-btn" onClick={onStart}>
           ⚖ CALL THE COURT TO ORDER
         </button>
+        <div className="blurb" style={{ marginTop: 10 }}>
+          Then hit <b style={{ color: "var(--green)" }}>▷ STEP</b> to advance one exchange at a time.
+        </div>
         <div className="picker">
           {CASES.map((rd, i) => (
             <div key={rd.topic} className={"pick" + (i === selIdx ? " sel" : "")} onClick={() => setSelIdx(i)}>

@@ -185,6 +185,13 @@ async def ws_round(ws: WebSocket) -> None:
     except ValueError:
         case = 0
     cfg = COURTROOM_CASES[case % len(COURTROOM_CASES)]
+    # `?turns=N` caps the interrogation length; turns=1 is the single step-through
+    # exchange (one question, one answer, one pass of the panel, then the verdict).
+    try:
+        turns = int(ws.query_params.get("turns", "0"))
+    except ValueError:
+        turns = 0
+    max_turns = turns if turns >= 1 else orchestrator.DEFAULT_MAX_TURNS
 
     questions: asyncio.Queue[str] = asyncio.Queue()
 
@@ -212,6 +219,7 @@ async def ws_round(ws: WebSocket) -> None:
             rid=f"ws_{case}",
             with_evidence=True,
             question_source=question_source,
+            max_turns=max_turns,
         )
     finally:
         reader_task.cancel()

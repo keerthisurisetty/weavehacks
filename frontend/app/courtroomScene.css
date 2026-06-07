@@ -802,8 +802,9 @@
   position: absolute;
   z-index: 28;
   max-width: 270px;
-  max-height: 124px;
-  overflow: hidden;
+  max-height: 140px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   border: var(--ink);
   box-shadow: var(--shadow-sm);
   padding: 8px 10px;
