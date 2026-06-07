@@ -4,15 +4,18 @@ One line per PR. Tick a box only when the green gate passes **and** the PR's
 "done when" (from `docs/IMPLEMENTATION_PLAN.md`) is met.
 
 - [x] PR0 scaffold + env + tooling
-- [ ] PR1 domain models + config
-- [ ] PR2 weave bootstrap + traced LLM client
-- [ ] PR3 speaker agent (assignable secret + mode)
-- [ ] PR4 first detector + adjudicator → one scored round (CLI)  ← vertical slice
-- [ ] PR5 redis foundation (state + leaderboard)
-- [ ] PR6 pub/sub event bus (real-time fan-out)
-- [ ] PR7 consistency auditor via RedisVL
-- [ ] PR8 full detector panel + ensemble fusion
-- [ ] PR9 weave evaluation harness  ← the money metric
-- [ ] PR10 AG-UI backend endpoint
-- [ ] PR11 copilotkit courtroom frontend
-- [ ] PR12 demo harness + polish + submission
+- [x] PR1 domain models + config
+- [x] PR2 weave bootstrap + traced LLM client
+- [x] PR3 speaker agent (assignable secret + mode)
+- [x] PR4 first detector + adjudicator → one scored round (CLI)  ← vertical slice
+- [x] PR5 redis foundation (state + leaderboard)
+- [x] PR6 pub/sub event bus (real-time fan-out)
+- [x] PR7 consistency auditor via RedisVL
+- [x] PR8 full detector panel + ensemble fusion
+- [x] PR9 weave evaluation harness  ← the money metric
+- [x] PR10 AG-UI backend endpoint
+- [x] PR11 courtroom frontend (functional; design restyle pending)
+- [x] PR12 demo harness + polish + submission
+- [x] PR13 (post-plan) UI rounds trace to Weave (weave.init at API startup)
+- [x] PR14 (post-plan) real-run fixes: load .env from repo root + surface W&B key; detector abstention (no-evidence != honest); deception-only short-circuit + min turns; detector calibration; quiet weave serializer warning
+- [x] PR16 (post-plan) courtroom UI rebuilt per design handoff (Neon-Noir) + live wiring: 4-detector panel "thinking" feeds, verdict spike, ground-truth reveal + Case File, HITL question injection, scripted-demo failsafe

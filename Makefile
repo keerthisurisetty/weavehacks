@@ -35,7 +35,7 @@ check:  ## the green gate — must pass before any commit/PR
 	$(BIN)/ruff format --check .
 	$(BIN)/mypy backend/app
 	$(BIN)/pytest -m "not agent and not eval" -q
-	cd frontend && npm run build
+	cd frontend && NEXT_DIST_DIR=.next-build npm run build
 
 fmt:  ## auto-format + autofix lint
 	$(BIN)/ruff format .

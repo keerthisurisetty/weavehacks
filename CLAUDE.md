@@ -21,7 +21,7 @@
 - Track progress in `docs/PR_STATUS.md`. Ralph-loop setup + CI live in `docs/AUTOMATION.md`.
 - Test nondeterministic agents by **mocking the LLM layer** for plumbing and asserting **bounds, not exact values**, on fixtures — see `docs/TESTING.md`.
 ## Current state
-- [x] **We are on PR1; last green = PR0** — scaffold runnable (`make check` green: lint + typecheck + tests + frontend build; `/health` serves).
+- [x] **PRs 0–14 + PR16 (courtroom UI); last green = PR16** — full Neon-Noir courtroom (design handoff) wired to the live WS: 4-detector "thinking" feeds, verdict spike, ground-truth reveal + Case File, HITL injection, scripted-demo failsafe. Backend gained a reveal event, 4-detector panel, case selection, HITL question_source. Detection quality still noisy (eval baseline acc .58/FPR .67 — see PR #16 plan). Remaining: quality tuning, video, submit.
 ## Stack (fixed)
 Python 3.11 + FastAPI (async) backend · OpenAI SDK with Pydantic structured outputs · Weave (tracing + evals) · Redis Stack (pub/sub bus + RedisVL vector search + sorted sets) · Next.js + CopilotKit/AG-UI frontend (WebSocket fallback). Models via `OPENAI_MODEL` env (or W&B Inference).
  
